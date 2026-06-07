@@ -22,6 +22,16 @@ MODELS_PATH = config["MODELS_PATH"]
 # Civitai with an invalid token.
 _CIVITAI_TOKEN = "__CIVITAI_TOKEN__"
 
+# Module-load diagnostic so a failed sed substitution is obvious in the
+# prediction setup logs rather than presenting as a confusing
+# "<filename> unavailable" weights-resolve error later.
+print(
+    "[Civitai helper] token state: "
+    + ("PLACEHOLDER_NOT_SUBSTITUTED" if _CIVITAI_TOKEN == "__CIVITAI_TOKEN__"
+       else f"OK (tail=...{_CIVITAI_TOKEN[-4:]})"),
+    flush=True,
+)
+
 # Filename → Civitai modelVersionId. Filename MUST match the safetensors name
 # the vault's _COMFY_BASES dict references — that's what ComfyUI's
 # CheckpointLoaderSimple looks up under MODELS_PATH/checkpoints/.

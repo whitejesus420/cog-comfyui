@@ -16,6 +16,7 @@ import base64
 
 os.environ["DOWNLOAD_LATEST_WEIGHTS_MANIFEST"] = "true"
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+os.environ["HF_HUB_DISABLE_XET"] = "1"
 os.environ["YOLO_CONFIG_DIR"] = "/tmp/Ultralytics"
 
 mimetypes.add_type("image/webp", ".webp")
