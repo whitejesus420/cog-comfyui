@@ -3,7 +3,9 @@ name: Push to Replicate
 # Manual cog-push for the vault tavern fork. Bakes the Civitai token into
 # custom_node_helpers/Civitai.py at build time so the public repo stays clean,
 # then pushes the image to r8.im/whitejesus420/cog-comfyui. Requires repo
-# secrets COG_TOKEN (Replicate CLI auth) and CIVITAI_TOKEN.
+# secrets REPLICATE_API_TOKEN (cog uses this in lieu of `cog login` — the
+# regular r8_... API token works here, no separate CLI auth token needed)
+# and CIVITAI_TOKEN.
 
 on:
   workflow_dispatch:
@@ -46,12 +48,6 @@ jobs:
           fi
           sudo chmod +x /usr/local/bin/cog
 
-      - name: cog login
-        env:
-          COG_TOKEN: ${{ secrets.COG_TOKEN }}
-        run: |
-          echo "$COG_TOKEN" | cog login --token-stdin
-
       - name: Install custom nodes
         run: |
           python ./scripts/install_custom_nodes.py
@@ -74,5 +70,11 @@ jobs:
           echo "Token substituted into custom_node_helpers/Civitai.py"
 
       - name: Push to Replicate
+        env:
+          REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
         run: |
+          if [ -z "$REPLICATE_API_TOKEN" ]; then
+            echo "::error::REPLICATE_API_TOKEN secret is not set" >&2
+            exit 1
+          fi
           cog push r8.im/whitejesus420/cog-comfyui
