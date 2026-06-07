@@ -1,9 +1,7 @@
 """Custom node helper: register Civitai-hosted checkpoints at container start.
 
-Adds two Illustrious-base furry/anthro SDXL checkpoints not in cog-comfyui's
-bundled weights:
-  - Nova Furry XL v18.0 IL          (Civitai modelVersionId 2943166)
-  - AnthroBlend Indigo Genesis v3.0 (Civitai modelVersionId 3004444)
+Adds Civitai-hosted SDXL-family checkpoints not in cog-comfyui's bundled
+weights. Vault tavern away-mode picks one of these as the base.
 
 The auth token is baked in at `cog push` time by the
 .github/workflows/push-to-replicate.yml sed substitution against the
@@ -24,9 +22,24 @@ MODELS_PATH = config["MODELS_PATH"]
 # Civitai with an invalid token.
 _CIVITAI_TOKEN = "__CIVITAI_TOKEN__"
 
+# Filename → Civitai modelVersionId. Filename MUST match the safetensors name
+# the vault's _COMFY_BASES dict references — that's what ComfyUI's
+# CheckpointLoaderSimple looks up under MODELS_PATH/checkpoints/.
+#
+# Disk-space note: each checkpoint is ~6.8GB; adding more than ~5 here at
+# once will bust the GitHub Actions ubuntu-latest runner's free disk during
+# the `cog push` build step. Stage additions across multiple workflow runs
+# (the next run picks up cached layers, so the marginal disk cost on a
+# subsequent run is only the new weights).
 _CHECKPOINTS = {
-    "novaFurryXL_ilV180A.safetensors":   "2943166",
-    "anthroblendIndigo_v30.safetensors": "3004444",
+    # Phase 2 — furry/anthro Illustrious bases.
+    "novaFurryXL_ilV180A.safetensors":          "2943166",
+    "anthroblendIndigo_v30.safetensors":        "3004444",
+    # Phase 3 batch 1 — visual-diversity bases.
+    "furrytoonmix_xlV3.safetensors":            "2961728",  # FurryToonMix (IL XL-V3)
+    "cyberrealisticPony_semiRealV6.safetensors": "3007024",  # CyberRealistic Pony Semi-Real v6
+    "BSSEquinoxILSemi_v50.safetensors":         "2973682",  # BSS Equinox IL v5.0
+    "reapony_v110.safetensors":                 "3003924",  # ReaPony v11.0
 }
 
 
