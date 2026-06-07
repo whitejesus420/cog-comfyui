@@ -73,9 +73,21 @@ class WeightsDownloader:
 
         print(f"⏳ Downloading {weight_str} to {dest}")
         start = time.time()
-        subprocess.check_call(
-            ["pget", "--log-level", "warn", "-xf", url, dest], close_fds=False
-        )
+
+        # Replicate CDN weights are tar archives extracted into `dest` via
+        # `pget -xf`. Raw files (e.g. Civitai's /api/download/models/{id}?token=
+        # endpoint) have no .tar extension and must be fetched straight to a
+        # file path with `pget -f`. The querystring is stripped before the
+        # extension check so `?token=...` doesn't fool the tar branch.
+        url_no_qs = url.split("?", 1)[0]
+        if url_no_qs.endswith(".tar"):
+            cmd = ["pget", "--log-level", "warn", "-xf", url, dest]
+        else:
+            os.makedirs(dest, exist_ok=True)
+            file_dest = os.path.join(dest, os.path.basename(weight_str))
+            cmd = ["pget", "--log-level", "warn", "-f", url, file_dest]
+        subprocess.check_call(cmd, close_fds=False)
+
         elapsed_time = time.time() - start
         try:
             file_size_bytes = os.path.getsize(

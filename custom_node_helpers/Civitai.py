@@ -1,0 +1,49 @@
+"""Custom node helper: register Civitai-hosted checkpoints at container start.
+
+Adds two Illustrious-base furry/anthro SDXL checkpoints not in cog-comfyui's
+bundled weights:
+  - Nova Furry XL v18.0 IL          (Civitai modelVersionId 2943166)
+  - AnthroBlend Indigo Genesis v3.0 (Civitai modelVersionId 3004444)
+
+The auth token is baked in at `cog push` time by the
+.github/workflows/push-to-replicate.yml sed substitution against the
+__CIVITAI_TOKEN__ placeholder, so this file stays token-free in the public
+repo. The runtime download is performed by the patched weights_downloader
+(non-.tar branch using `pget -f` to a file path).
+"""
+
+from custom_node_helper import CustomNodeHelper
+from config import config
+
+MODELS_PATH = config["MODELS_PATH"]
+
+# Replaced by .github/workflows/push-to-replicate.yml at build time.
+# If you still see the literal placeholder in a deployed image, the sed step
+# did not run and weights_map will return {} -> predictions referencing these
+# checkpoints will fail at the weights-resolve step rather than hitting
+# Civitai with an invalid token.
+_CIVITAI_TOKEN = "__CIVITAI_TOKEN__"
+
+_CHECKPOINTS = {
+    "novaFurryXL_ilV180A.safetensors":   "2943166",
+    "anthroblendIndigo_v30.safetensors": "3004444",
+}
+
+
+class Civitai(CustomNodeHelper):
+    @staticmethod
+    def models():
+        return list(_CHECKPOINTS.keys())
+
+    @staticmethod
+    def weights_map(base_url):
+        if not _CIVITAI_TOKEN or _CIVITAI_TOKEN == "__CIVITAI_TOKEN__":
+            return {}
+        ckpt_dest = f"{MODELS_PATH}/checkpoints"
+        return {
+            filename: {
+                "url":  f"https://civitai.com/api/download/models/{version_id}?token={_CIVITAI_TOKEN}",
+                "dest": ckpt_dest,
+            }
+            for filename, version_id in _CHECKPOINTS.items()
+        }
