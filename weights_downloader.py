@@ -47,10 +47,10 @@ class WeightsDownloader:
                     self.weights_map[weight_str]["dest"],
                 )
         else:
-            # Diagnostic: surface what's actually in weights_map so we can tell
-            # whether Civitai.weights_map() ran (and with what state) vs being
-            # silently empty due to a token-substitution failure.
-            civitai_keys = sorted(
+            # Diagnostic: surface why a Civitai-hosted checkpoint isn't in the
+            # manifest. Covers all three failure modes: helper not registered,
+            # token not substituted, or weights_map() returning unexpectedly.
+            civitai_keys_in_manifest = sorted(
                 k for k in self.weights_map
                 if k.endswith(".safetensors") and (
                     "kodorail" in k or "nova" in k.lower()
@@ -60,11 +60,35 @@ class WeightsDownloader:
                     or "icerealistic" in k.lower() or "mopmix" in k.lower()
                 )
             )
+            try:
+                import custom_node_helpers as _helpers
+                civitai_in_helpers = "Civitai" in dir(_helpers)
+            except Exception as e:
+                civitai_in_helpers = f"helpers_import_err: {type(e).__name__}: {e}"
+            try:
+                from custom_node_helpers.Civitai import _CIVITAI_TOKEN as _tok
+                from custom_node_helpers.Civitai import _CHECKPOINTS as _ckpts
+                from custom_node_helpers.Civitai import Civitai as _CivClass
+                if _tok == "__CIVITAI_TOKEN__":
+                    token_state = "PLACEHOLDER_NOT_SUBSTITUTED"
+                elif not _tok:
+                    token_state = "EMPTY_STRING"
+                else:
+                    token_state = f"OK_tail_{_tok[-4:]}"
+                wm_from_civitai = list(_CivClass.weights_map(""))
+                checkpoints_listed = list(_ckpts.keys())
+            except Exception as e:
+                token_state = f"IMPORT_ERR: {type(e).__name__}: {e}"
+                wm_from_civitai = []
+                checkpoints_listed = []
             raise ValueError(
                 f"{weight_str} unavailable. "
-                f"[diag] weights_map total={len(self.weights_map)}, "
-                f"civitai-style keys present={civitai_keys}. "
-                "View the list of available weights: https://github.com/replicate/cog-comfyui/blob/main/supported_weights.md"
+                f"[diag] manifest_total={len(self.weights_map)} "
+                f"civitai_in_helpers={civitai_in_helpers} "
+                f"token_state={token_state} "
+                f"civitai_weights_map_returns={wm_from_civitai} "
+                f"civitai_checkpoints_listed={checkpoints_listed} "
+                f"civitai_keys_in_manifest={civitai_keys_in_manifest}"
             )
 
     def check_if_file_exists(self, weight_str, dest):
