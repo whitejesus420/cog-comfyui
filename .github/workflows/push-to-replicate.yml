@@ -72,6 +72,12 @@ jobs:
       - name: Push to Replicate
         env:
           REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+          # cog 0.19+ switched to static schema generation by default, which
+          # rejects predict.py's `optimise_images.predict_output_format()` etc.
+          # dynamic-call defaults (the call can't be statically resolved). Opt
+          # back into the legacy runtime path. v0.20.0 removed this escape
+          # hatch entirely — keep cog_version pinned to v0.19.x or older.
+          COG_LEGACY_SCHEMA: "1"
         run: |
           if [ -z "$REPLICATE_API_TOKEN" ]; then
             echo "::error::REPLICATE_API_TOKEN secret is not set" >&2
