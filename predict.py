@@ -129,8 +129,17 @@ class Predictor(BasePredictor):
             description="Return any temporary files, such as preprocessed controlnet images. Useful for debugging.",
             default=False,
         ),
-        output_format: str = optimise_images.predict_output_format(),
-        output_quality: int = optimise_images.predict_output_quality(),
+        output_format: str = Input(
+            description="Format of the output images",
+            choices=["webp", "jpg", "png"],
+            default="webp",
+        ),
+        output_quality: int = Input(
+            description="Quality of the output images, from 0 to 100. 100 is best quality, 0 is lowest quality.",
+            default=95,
+            ge=0,
+            le=100,
+        ),
         randomise_seeds: bool = Input(
             description="Automatically randomise seeds (seed, noise_seed, rand_seed)",
             default=True,
