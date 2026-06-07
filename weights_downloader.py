@@ -47,8 +47,24 @@ class WeightsDownloader:
                     self.weights_map[weight_str]["dest"],
                 )
         else:
+            # Diagnostic: surface what's actually in weights_map so we can tell
+            # whether Civitai.weights_map() ran (and with what state) vs being
+            # silently empty due to a token-substitution failure.
+            civitai_keys = sorted(
+                k for k in self.weights_map
+                if k.endswith(".safetensors") and (
+                    "kodorail" in k or "nova" in k.lower()
+                    or "anthro" in k.lower() or "furrytoon" in k.lower()
+                    or "cyberrealistic" in k.lower() or "equinox" in k.lower()
+                    or "reapony" in k.lower() or "miaomiao" in k.lower()
+                    or "icerealistic" in k.lower() or "mopmix" in k.lower()
+                )
+            )
             raise ValueError(
-                f"{weight_str} unavailable. View the list of available weights: https://github.com/replicate/cog-comfyui/blob/main/supported_weights.md"
+                f"{weight_str} unavailable. "
+                f"[diag] weights_map total={len(self.weights_map)}, "
+                f"civitai-style keys present={civitai_keys}. "
+                "View the list of available weights: https://github.com/replicate/cog-comfyui/blob/main/supported_weights.md"
             )
 
     def check_if_file_exists(self, weight_str, dest):
