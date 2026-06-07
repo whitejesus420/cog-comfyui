@@ -26,20 +26,24 @@ _CIVITAI_TOKEN = "__CIVITAI_TOKEN__"
 # the vault's _COMFY_BASES dict references — that's what ComfyUI's
 # CheckpointLoaderSimple looks up under MODELS_PATH/checkpoints/.
 #
-# Disk-space note: each checkpoint is ~6.8GB; adding more than ~5 here at
-# once will bust the GitHub Actions ubuntu-latest runner's free disk during
-# the `cog push` build step. Stage additions across multiple workflow runs
-# (the next run picks up cached layers, so the marginal disk cost on a
-# subsequent run is only the new weights).
+# Weights are downloaded at PREDICTION time by weights_downloader, not at
+# build time, so the image stays small regardless of how many entries are
+# listed here. The marginal cost of a new entry is one ~30s-2min cold
+# download on the first prediction that references it (subsequent
+# predictions on the same warm container reuse the cached file).
 _CHECKPOINTS = {
     # Phase 2 — furry/anthro Illustrious bases.
-    "novaFurryXL_ilV180A.safetensors":          "2943166",
-    "anthroblendIndigo_v30.safetensors":        "3004444",
-    # Phase 3 batch 1 — visual-diversity bases.
-    "furrytoonmix_xlV3.safetensors":            "2961728",  # FurryToonMix (IL XL-V3)
-    "cyberrealisticPony_semiRealV6.safetensors": "3007024",  # CyberRealistic Pony Semi-Real v6
-    "BSSEquinoxILSemi_v50.safetensors":         "2973682",  # BSS Equinox IL v5.0
-    "reapony_v110.safetensors":                 "3003924",  # ReaPony v11.0
+    "novaFurryXL_ilV180A.safetensors":            "2943166",
+    "anthroblendIndigo_v30.safetensors":          "3004444",
+    # Phase 3 — visual-diversity bases.
+    "furrytoonmix_xlV3.safetensors":              "2961728",  # FurryToonMix (IL XL-V3)
+    "cyberrealisticPony_semiRealV6.safetensors":  "3007024",  # CyberRealistic Pony Semi-Real v6
+    "BSSEquinoxILSemi_v50.safetensors":           "2973682",  # BSS Equinox IL v5.0
+    "reapony_v110.safetensors":                   "3003924",  # ReaPony v11.0
+    "miaomiaoRealskin_epsV14.safetensors":        "2602600",  # MiaoMiao RealSkin (IL EPS v1.4)
+    "icerealisticAnima_v21Noob.safetensors":      "59253",    # IceRealistic (NoobAI v2.1)
+    "kodorail_v190plus.safetensors":              "3011012",  # KodoraIL v1.9.0+
+    "mopMix_waiZynthra.safetensors":              "2422675",  # MoP Mix (Illustrious)
 }
 
 
