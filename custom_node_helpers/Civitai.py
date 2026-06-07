@@ -16,18 +16,21 @@ from config import config
 MODELS_PATH = config["MODELS_PATH"]
 
 # Replaced by .github/workflows/push-to-replicate.yml at build time.
-# If you still see the literal placeholder in a deployed image, the sed step
-# did not run and weights_map will return {} -> predictions referencing these
-# checkpoints will fail at the weights-resolve step rather than hitting
-# Civitai with an invalid token.
+# IMPORTANT: only ONE occurrence of the placeholder string should appear in
+# this file. The CI sed step is global, so any other literal
+# `__CIVITAI_TOKEN__` (e.g. inside a comparison) would also be substituted,
+# producing a tautological `_CIVITAI_TOKEN == _CIVITAI_TOKEN` check that
+# silently returns {} and makes every Civitai-hosted checkpoint look
+# "unavailable" at predict time.
 _CIVITAI_TOKEN = "__CIVITAI_TOKEN__"
 
-# Module-load diagnostic so a failed sed substitution is obvious in the
-# prediction setup logs rather than presenting as a confusing
-# "<filename> unavailable" weights-resolve error later.
+# Module-load diagnostic. Use a length heuristic instead of a literal
+# placeholder compare so a future sed mishap doesn't false-positive the
+# OK branch. The placeholder is 17 chars; a real Civitai token is 32 hex.
 print(
     "[Civitai helper] token state: "
-    + ("PLACEHOLDER_NOT_SUBSTITUTED" if _CIVITAI_TOKEN == "__CIVITAI_TOKEN__"
+    + ("EMPTY" if not _CIVITAI_TOKEN
+       else "PLACEHOLDER_LIKE" if len(_CIVITAI_TOKEN) < 20
        else f"OK (tail=...{_CIVITAI_TOKEN[-4:]})"),
     flush=True,
 )
@@ -64,7 +67,9 @@ class Civitai(CustomNodeHelper):
 
     @staticmethod
     def weights_map(base_url):
-        if not _CIVITAI_TOKEN or _CIVITAI_TOKEN == "__CIVITAI_TOKEN__":
+        # Length heuristic instead of literal placeholder compare; see note
+        # at top of file about why sed-substituted compares break.
+        if not _CIVITAI_TOKEN or len(_CIVITAI_TOKEN) < 20:
             return {}
         ckpt_dest = f"{MODELS_PATH}/checkpoints"
         return {
