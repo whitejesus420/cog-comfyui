@@ -6,6 +6,12 @@ build:
   python_version: "3.12"
   python_requirements: requirements.txt
   run:
+    # Pin in-image cog to match the runner cog version (v0.19.3). cog auto-
+    # installs the latest cog into the image at stage 6, but v0.20.0 removed
+    # `cog.command.openapi_schema` which the runner's v0.19.3 invokes during
+    # "Validating model schema" — version mismatch crashes the push. Pinning
+    # here downgrades after the auto-install so both sides agree.
+    - pip install --no-cache 'cog==0.19.3'
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/latest/download/pget_$(uname -s)_$(uname -m)" && chmod +x /usr/local/bin/pget
     - pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 predict: "predict.py:Predictor"
