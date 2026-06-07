@@ -2,10 +2,16 @@ name: Push to Replicate
 
 # Manual cog-push for the vault tavern fork. Bakes the Civitai token into
 # custom_node_helpers/Civitai.py at build time so the public repo stays clean,
-# then pushes the image to r8.im/whitejesus420/cog-comfyui. Requires repo
-# secrets REPLICATE_API_TOKEN (cog uses this in lieu of `cog login` — the
-# regular r8_... API token works here, no separate CLI auth token needed)
-# and CIVITAI_TOKEN.
+# then pushes the image to r8.im/whitejesus420/cog-comfyui. Requires three
+# repo secrets:
+#   COG_TOKEN           — CLI auth token from https://replicate.com/auth/token,
+#                         needed to authenticate against the r8.im Docker
+#                         registry. The regular r8_... API token does NOT work
+#                         for registry push (confirmed on cog 0.20.0).
+#   REPLICATE_API_TOKEN — r8_... API token, also needed by cog push for the
+#                         metadata/version-create API call.
+#   CIVITAI_TOKEN       — baked into custom_node_helpers/Civitai.py at build
+#                         time so Civitai weight downloads work in the image.
 
 on:
   workflow_dispatch:
@@ -68,6 +74,16 @@ jobs:
             exit 1
           fi
           echo "Token substituted into custom_node_helpers/Civitai.py"
+
+      - name: Cog login to r8.im registry
+        env:
+          COG_TOKEN: ${{ secrets.COG_TOKEN }}
+        run: |
+          if [ -z "$COG_TOKEN" ]; then
+            echo "::error::COG_TOKEN secret is not set (fetch from https://replicate.com/auth/token)" >&2
+            exit 1
+          fi
+          echo "$COG_TOKEN" | cog login --token-stdin
 
       - name: Push to Replicate
         env:
