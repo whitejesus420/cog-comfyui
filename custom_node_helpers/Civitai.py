@@ -50,9 +50,17 @@ _CHECKPOINTS = {
     "anthroblendIndigo_v30.safetensors":          "3004444",
     # Phase 3 — visual-diversity bases.
     "furrytoonmix_xlV3.safetensors":              "2961728",  # FurryToonMix (IL XL-V3)
-    "cyberrealisticPony_semiRealV6.safetensors":  "3007024",  # CyberRealistic Pony Semi-Real v6
-    "BSSEquinoxILSemi_v50.safetensors":           "2973682",  # BSS Equinox IL v5.0
-    "reapony_v110.safetensors":                   "3003924",  # ReaPony v11.0
+    # cyberrealisticPony_semiRealV6 (v3007024) and reapony_v110 (v3003924) were
+    # the original picks for the pony_semireal / pony_real_v11 slots, but their
+    # Civitai creator flipped the "require sign-in to download" gate after
+    # we'd already wired them in — the API token alone returns 401 with
+    # {"error":"Unauthorized","message":"creator ... requires you to be
+    # logged in"}. There's no public substitute that's an exact match for
+    # "semi-real Pony", so we fall back to the canonical realistic-Pony
+    # checkpoints that ARE public and R2-hosted.
+    "cyberrealisticPony_v180Coreshift.safetensors": "2884631",  # CyberRealistic Pony v1.8.0 Coreshift (pony_semireal slot)
+    "BSSEquinoxILSemi_v50.safetensors":             "2973682",  # BSS Equinox IL v5.0
+    "ponyRealism_V22.safetensors":                  "914390",   # Pony Realism V22 (pony_real_v11 slot)
     "miaomiaoRealskin_epsV14.safetensors":        "2602600",  # MiaoMiao RealSkin (IL EPS v1.4)
     "icerealisticAnima_v21Noob.safetensors":      "59253",    # IceRealistic (NoobAI v2.1)
     "kodorail_v190plus.safetensors":              "3011012",  # KodoraIL v1.9.0+
