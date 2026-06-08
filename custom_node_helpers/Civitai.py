@@ -65,6 +65,10 @@ _CHECKPOINTS = {
     "icerealisticAnima_v21Noob.safetensors":      "59253",    # IceRealistic (NoobAI v2.1)
     "kodorail_v190plus.safetensors":              "3011012",  # KodoraIL v1.9.0+
     "mopMix_waiZynthra.safetensors":              "2422675",  # MoP Mix (Illustrious)
+    # Phase 5 — diversity additions (verified non-gated via Civitai API 2026-06-08).
+    "realvisxlV50_v50Bakedvae.safetensors":       "789646",   # RealVisXL V5.0 (SG_161222, SDXL 1.0, photoreal portrait)
+    "illustriousXL_v01.safetensors":              "889818",   # Illustrious-XL v0.1 (aria1th261, canonical IL base)
+    "waiIllustriousSDXL_v170.safetensors":        "2883731",  # WAI-illustrious-SDXL v17.0 (WAI0731, latest IL finetune)
 }
 
 
