@@ -116,16 +116,32 @@ class WeightsDownloader:
 
         # Replicate CDN weights are tar archives extracted into `dest` via
         # `pget -xf`. Raw files (e.g. Civitai's /api/download/models/{id}?token=
-        # endpoint) have no .tar extension and must be fetched straight to a
-        # file path with `pget -f`. The querystring is stripped before the
-        # extension check so `?token=...` doesn't fool the tar branch.
+        # endpoint) have no .tar extension; we used to fetch those with `pget
+        # -f` too, but pget exits 2 on the b2.civitai.com endpoint while it
+        # works fine against the r2.cloudflarestorage.com endpoint (Civitai
+        # serves both depending on the file). Hard to debug since `pget
+        # --log-level warn` swallows everything, and bumping the log level
+        # would require another build cycle. Replicate's cog-comfyui base
+        # image bakes curl in (the cog.yaml `run:` step uses it to install
+        # pget itself), so the simplest robust path for raw single-file
+        # downloads is curl with redirect + retry + fail-on-HTTP-error. The
+        # querystring is stripped before the extension check so `?token=...`
+        # doesn't fool the tar branch.
         url_no_qs = url.split("?", 1)[0]
         if url_no_qs.endswith(".tar"):
             cmd = ["pget", "--log-level", "warn", "-xf", url, dest]
         else:
             os.makedirs(dest, exist_ok=True)
             file_dest = os.path.join(dest, os.path.basename(weight_str))
-            cmd = ["pget", "--log-level", "warn", "-f", url, file_dest]
+            # -L follow redirects, -f fail on >=400, --retry 3 with backoff,
+            # --connect-timeout cap so a stalled DNS lookup can't hang the
+            # whole prediction.
+            cmd = [
+                "curl", "-sSL", "-f",
+                "--retry", "3", "--retry-delay", "2",
+                "--connect-timeout", "30",
+                "-o", file_dest, url,
+            ]
         subprocess.check_call(cmd, close_fds=False)
 
         elapsed_time = time.time() - start
