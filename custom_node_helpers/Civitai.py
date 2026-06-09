@@ -69,6 +69,12 @@ _CHECKPOINTS = {
     "realvisxlV50_v50Bakedvae.safetensors":       "789646",   # RealVisXL V5.0 (SG_161222, SDXL 1.0, photoreal portrait)
     "illustriousXL_v01.safetensors":              "889818",   # Illustrious-XL v0.1 (aria1th261, canonical IL base)
     "waiIllustriousSDXL_v170.safetensors":        "2883731",  # WAI-illustrious-SDXL v17.0 (WAI0731, latest IL finetune)
+    # Phase 6 — furry diversity (verified non-gated via Civitai API 2026-06-09).
+    # Each fills a distinct base-family lane vs Phase 2/3 furry picks
+    # (which are all Illustrious): NoobAI, Pony, IL-kemono.
+    "yiffymix_v64Noobxl.safetensors":             "2642671",  # YiffyMix v64 NoobXL (Lawlas, NoobAI, classic furry brand)
+    "neatnessFluffyFurMix_eclipsePonyXL.safetensors": "2030380",  # NeatNess Fluffy Fur Mix "Eclipse" (Pony XL)
+    "novaKemonoXL_v80.safetensors":               "2765021",  # Nova Kemono XL v8.0 (Illustrious, kemono/anime-anthro)
 }
 
 
